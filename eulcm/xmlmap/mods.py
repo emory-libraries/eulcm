@@ -8,16 +8,17 @@ class MODS(mods.MODS):
     
     ark = xmlmap.StringField('mods:identifier[@type="ark"]')
     '''ARK (Archival Resource Key) identifier, short form'''
+    # FIXME: can we get xmlmap fields to provide/generate auto-doc info for us?
+
+    
     ark_uri = xmlmap.StringField('mods:identifier[@type="uri"][contains(., "ark:")]')
     '''ARK (Archival Resource Key) identifier as a full, resolvable URL'''
 
 
     source_id = xmlmap.IntegerField("mods:identifier[@type='local_source_id']")
-    ''':type integer: local source id
-    ``mods:identifier[@type="local_source_id"]``'''
+    ''':type integer: local source id ``mods:identifier[@type="local_source_id"]``'''
     short_name = xmlmap.StringField("mods:identifier[@type='local_short_name']")
-    ''':type string: local short name identifier
-    ``mods:identifier[@type="local_short_name"]``'''
+    ''':type string: local short name identifier ``mods:identifier[@type="local_short_name"]``'''
     
     restrictions_on_access = xmlmap.NodeField('mods:accessCondition[@type="restrictions on access"]',
                                               mods.AccessCondition)

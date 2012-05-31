@@ -17,8 +17,8 @@
 
 '''
 
-Custom :class:`eulxml.xmlmap.XmlObject` classes for use in
-:class:`~eulfedora.models.DigitalObject` subclasses defined in
-:mod:`eulcm.models`.
+Custom :class:`eulxml.xmlmap.XmlObject` classes for use with XML
+datastreams on :class:`~eulfedora.models.DigitalObject` subclasses
+defined in :mod:`eulcm.models`.
 
 '''

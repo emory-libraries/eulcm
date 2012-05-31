@@ -15,7 +15,6 @@
 #   limitations under the License.
 
 
-
 from eulfedora.models import DigitalObject, XmlDatastream, Relation
 from eulfedora.rdfns import relsext
 from eulxml.xmlmap import mods
@@ -38,4 +37,5 @@ class Collection(DigitalObject):
     '''Parent :class:`Collection` that this collection is related to
     via `isMemberOfCollection` relation, for subcollections.
     '''
+    # FIXME: sphinx error on the Relation attribute
 
