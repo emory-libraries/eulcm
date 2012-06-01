@@ -222,3 +222,21 @@ intersphinx_mapping = {
     'http://eulfedora.readthedocs.org/en/latest/': None,
     'http://eulxml.readthedocs.org/en/latest/': None,
 }
+
+
+
+# def isdescriptor(x):
+#     """Check if the object is some kind of descriptor."""
+
+#     for item in '__get__', '__set__', '__delete__':
+#         try:
+#             if hasattr(getattr(x, item, None), '__call__'):
+#                 return True
+#         except Exception:
+#             return False
+#     return False
+
+
+# # MONKEY-PATCH!
+# import sphinx.ext.autodoc as autodoc
+# autodoc.isdescriptor = isdescriptor

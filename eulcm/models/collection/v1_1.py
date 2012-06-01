@@ -38,9 +38,9 @@ class Collection(DigitalObject):
             'format': mods.MODS_NAMESPACE,
             'versionable': True,
         })
-    '''MODS :class:`~eulfedora.models.XmlDatastream` with content as
-    :class:`eulxml.xmlmap.mods.MODS`; versionable, datastream ID
-    ``MODS``'''
+    # '''MODS :class:`~eulfedora.models.XmlDatastream` with content as
+    # :class:`eulxml.xmlmap.mods.MODS`; versionable, datastream ID
+    # ``MODS``'''
 
     collection = Relation(relsext.isMemberOfCollection,
                           type='self')  
