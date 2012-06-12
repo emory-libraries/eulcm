@@ -74,3 +74,26 @@ class Arrangement(DigitalObject):
     '''
 
 
+class RushdieFile(Arrangement):
+    '''File object; extends :class:`Arrangement` and adds an
+    :attr:`original` datastream and optional :attr:`pdf` datastream.
+    '''
+    RUSHDIE_FILE_CMODEL = 'info:fedora/emory-control:Rushdie-MarblMacFile-1.0'
+    
+    CONTENT_MODELS = [ RUSHDIE_FILE_CMODEL, Arrangement.ARRANGEMENT_CONTENT_MODEL ]
+
+    pdf = FileDatastream("PDF", "pdf datastream", defaults={
+            'mimetype': 'application/pdf',
+            'versionable': True,
+        })
+    '''pdf :class:`~eulfedora.models.FileDatastream` with datastream
+    id **PDF**'''
+
+    original = FileDatastream("ORIGINAL", "original datastream", defaults={
+            'mimetype': 'application/',
+            'versionable': True,
+        })
+    '''original file content :class:`~eulfedora.models.FileDatastream`
+    with datastream id **ORIGINAL**'''
+
+
