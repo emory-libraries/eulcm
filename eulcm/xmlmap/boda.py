@@ -129,6 +129,10 @@ class ArrangementMods(mods.MODS):
     'series'
 
 
+# NOTE: for series/subseries storage in arrangementmods:
+# - if series only, series info should be stored as mods.series
+# - if series and subseries, *subseries* is stored as mods.series
+#   and series info is stored at mods.series.series
 
 class FileMasterTech_Base(xmlmap.XmlObject):
     '''Base class for technical file metadata'''
