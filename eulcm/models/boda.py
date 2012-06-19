@@ -23,18 +23,18 @@ more standard cmodels soon.
 
 '''
 
+import email
 
-from eulfedora.models import DigitalObject, FileDatastream, \
-     XmlDatastream, Relation
+from eulfedora import models as fedora_models
 from eulfedora.util import RequestFailed
 from eulfedora.rdfns import relsext
-from eulxml.xmlmap import mods
+from eulxml.xmlmap import mods, cerp
 
 from eulcm.models.collection.v1_1 import Collection
 from eulcm.xmlmap.boda import Rights, ArrangementMods, FileMasterTech
 
 
-class Arrangement(DigitalObject):
+class Arrangement(fedora_models.DigitalObject):
     '''Subclass of :class:`eulfedora.models.DigitalObject` for
     "arrangement" content, i.e., born-digital materials which need to
     be processed and arranged into series before they can be made
@@ -43,7 +43,7 @@ class Arrangement(DigitalObject):
     ARRANGEMENT_CONTENT_MODEL = 'info:fedora/emory-control:Arrangement-1.0'
     CONTENT_MODELS = [ ARRANGEMENT_CONTENT_MODEL ]
 
-    rights = XmlDatastream("Rights", "Usage rights and access control metadata", Rights,
+    rights = fedora_models.XmlDatastream("Rights", "Usage rights and access control metadata", Rights,
         defaults={
             'control_group': 'M',
             'versionable': True,
@@ -51,7 +51,7 @@ class Arrangement(DigitalObject):
     '''access control metadata :class:`~eulfedora.models.XmlDatastream`
     with content as :class:`Rights`; datastream id ``Rights``'''
 
-    filetech = XmlDatastream("FileMasterTech", "File Technical Metadata", FileMasterTech ,defaults={
+    filetech = fedora_models.XmlDatastream("FileMasterTech", "File Technical Metadata", FileMasterTech ,defaults={
             'control_group': 'M',
             'versionable': True,
         })
@@ -60,7 +60,7 @@ class Arrangement(DigitalObject):
     :class:`keep.common.models.FileMasterTech`; datastream ID
     ``FileMasterTech``'''
 
-    mods = XmlDatastream('MODS', 'MODS Metadata', ArrangementMods, defaults={
+    mods = fedora_models.XmlDatastream('MODS', 'MODS Metadata', ArrangementMods, defaults={
             'control_group': 'M',
             'format': mods.MODS_NAMESPACE,
             'versionable': True,
@@ -68,12 +68,84 @@ class Arrangement(DigitalObject):
     '''MODS :class:`~eulfedora.models.XmlDatastream` with content as
     :class:`ArrangementMods`; datstream ID ``MODS``'''
 
-    collection = Relation(relsext.isMemberOfCollection, type=Collection)
+    collection = fedora_models.Relation(relsext.isMemberOfCollection, type=Collection)
     ''':class:`~eulcm.models.collection.v1_1.Collection` that this
     object is a member of, via `isMemberOfCollection` relation.
     '''
 
 
+
+### email folder and message objects
+
+
+class Mailbox(fedora_models.DigitalObject):
+    ''':class:`rushdieweb.fedorabase.models.DocumentObject` subclass
+    to represent an email mailbox.
+
+    Has an auto-generated :class:`eulfedora.models.ReverseRelation`
+    **messages** with a list of :class:`EmailMessage` objects that are
+    part of this mailbox.
+
+    Has an auto-generated :class:`eulfedora.models.ReverseRelation`
+    **constituent_files** with a list of :class:`RushdieFile` objects
+    that are the constituent files of this mailbox (i.e., index and
+    data files).
+    
+    '''
+    MAILBOX_CONTENT_MODEL = 'info:fedora/emory-control:Rushdie-CerpMailbox-1.0'
+    CONTENT_MODELS = [ MAILBOX_CONTENT_MODEL ]
+
+    # auto-generated reverse relations: messages, constituent_files
+
+
+class EmailMessageDatastreamObject(fedora_models.DatastreamObject):
+    ''':class:`eulfedora.models.DatastreamObject` subclass for
+    handling email message datastreams.
+    '''
+    default_mimetype = 'message/rfc822'
+    'default mimetype for message datastreams'
+    
+    def _convert_content(self, data, url):
+        return email.message_from_string(data)
+
+    def _bootstrap_content(self):
+        return email.Message()
+
+
+class EmailMessageDatastream(fedora_models.Datastream):
+    ''':class:`eulfedora.models.Datastream` subclass for handling
+    email message datastreams.  Uses :class:`EmailMessageDatastreamObject`
+    for actual content handling.
+    '''
+    _datastreamClass = EmailMessageDatastreamObject
+
+
+class EmailMessage(Arrangement):
+    ''':class:`Arrangement` subclass to represent a single email
+    message.  (Does not have :attr:`Arrangement.file_tech`.)
+    ''' 
+    EMAIL_MESSAGE_CMODEL = 'info:fedora/emory-control:Rushdie-MailboxEntry-1.0'
+    CONTENT_MODELS = [ EMAIL_MESSAGE_CMODEL , Arrangement.ARRANGEMENT_CONTENT_MODEL ]
+
+    mime_data = EmailMessageDatastream('MIME', 'MIME message data',
+        defaults={'versionable':True})
+    ''':class:`EmailMessageDatastream` for MIME message data, with
+    datastream id **MIME**''' 
+    
+    cerp = fedora_models.XmlDatastream('CERP', 'CERP XML metadata', cerp.Message,
+        defaults={'versionable':True})
+    ''':class:`~eulfedora.models.XmlDatastream` for email content in
+    CERP xml format, with datastream id **CERP** '''
+
+    mailbox = fedora_models.Relation(relsext.isPartOf, Mailbox,
+                                     related_name='messages')
+    ''':class:`Mailbox` this email message belongs to, via ``isPartOf`` relation'''
+    # NOTE: first batch of messages created (Performa 5400) have rels-ext
+    # relations in both directions, but we are not preserving that.
+
+
+### basic file object
+    
 class RushdieFile(Arrangement):
     '''File object; extends :class:`Arrangement` and adds an
     :attr:`original` datastream and optional :attr:`pdf` datastream.
@@ -81,19 +153,29 @@ class RushdieFile(Arrangement):
     RUSHDIE_FILE_CMODEL = 'info:fedora/emory-control:Rushdie-MarblMacFile-1.0'
     
     CONTENT_MODELS = [ RUSHDIE_FILE_CMODEL, Arrangement.ARRANGEMENT_CONTENT_MODEL ]
-
-    pdf = FileDatastream("PDF", "pdf datastream", defaults={
+ 
+    pdf = fedora_models.FileDatastream("PDF", "pdf datastream", defaults={
             'mimetype': 'application/pdf',
             'versionable': True,
         })
     '''pdf :class:`~eulfedora.models.FileDatastream` with datastream
     id **PDF**'''
 
-    original = FileDatastream("ORIGINAL", "original datastream", defaults={
+    original = fedora_models.FileDatastream("ORIGINAL", "original datastream", defaults={
             'mimetype': 'application/',
             'versionable': True,
         })
     '''original file content :class:`~eulfedora.models.FileDatastream`
     with datastream id **ORIGINAL**'''
+
+    mailbox = fedora_models.Relation(relsext.isConstituentOf, Mailbox,
+                                     related_name='constituent_files')
+    ''':class:`Mailbox` that this file is a constituent part of (i.e.,
+    email folder data or index file), via ``isConstituentOf`` relation'''
+    # NOTE: first batch of messages created (Performa 5400) have rels-ext
+    # relations in both directions, but we are not preserving that.
+
+
+
 
 
