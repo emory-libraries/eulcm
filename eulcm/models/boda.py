@@ -143,6 +143,14 @@ class EmailMessage(Arrangement):
     # NOTE: first batch of messages created (Performa 5400) have rels-ext
     # relations in both directions, but we are not preserving that.
 
+    def update_cerp(self):
+        '''
+        Generate CERP xml for :attr:`EmailMessage.cerp.content` based
+        on :attr:`EmailMessage.mime_data.content`.  Convenience
+        wrapper around :meth:`eulxml.xmlmap.cerp.Message.from_email_message`.
+        '''
+        self.cerp.content = cerp.Message.from_email_message(self.mime_data.content)
+
 
 ### basic file object
     
