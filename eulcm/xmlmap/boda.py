@@ -134,6 +134,27 @@ class ArrangementMods(mods.MODS):
 # - if series and subseries, *subseries* is stored as mods.series
 #   and series info is stored at mods.series.series
 
+class DirPart(object):
+    '''A DirPart represents a single path component in a file path.
+
+    :param computer: computer where this content is located
+    :param base: path to this directory 
+    :param name: name of this directory 
+    '''
+
+    def __init__(self, computer, base, name):
+        self.computer = computer
+        self.base = base
+        self.name = name
+
+    def __unicode__(self):
+        return self.name
+
+    def path(self):
+        'full path for this item (combines computer, base path, and name)'
+        return '/' + self.computer + self.base + self.name + '/'
+        
+
 class FileMasterTech_Base(xmlmap.XmlObject):
     '''Base class for technical file metadata'''
     
@@ -175,7 +196,8 @@ class FileMasterTech_Base(xmlmap.XmlObject):
 
     def dir_parts(self):
         '''
-        Directory parts based on path.    
+        Directory parts based on path.  Generator returning :class:`DirPart` instances
+        for each portion of the :attr:`path`.   
         '''
         # FIXME: redundant code with rushdie webapp ?
         # TODO: document what this actually does...
@@ -186,7 +208,7 @@ class FileMasterTech_Base(xmlmap.XmlObject):
         # path is absolute, so raw_parts[0] is empty. skip it. also skip
         # raw_parts[-1] for special handling later
         for part in raw_parts[1:-1]:
-            yield _DirPart(self.computer, base, part)
+            yield DirPart(self.computer, base, part)
             base = base + part + '/'
 
     def name(self):
